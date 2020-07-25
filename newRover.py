@@ -11,7 +11,6 @@ from multiprocessing import Process, Lock
 
 def send_video():
     while True:
-        
         ret,frame=cap.read()
         if (ret):
 #            lock.acquire()
@@ -19,13 +18,13 @@ def send_video():
             b_frame = base64.b64encode(buffer)
             b_size = len(b_frame)
                 #sending data
-            connection.sendall(struct.pack("<L", b_size) + b_frame)
+            conn_vid1.sendall(struct.pack("<L", b_size) + b_frame)
 #        lock.release()
             
 def recv_cmd():
-    while True:
-        msg = conn2.recv(1024)
-        print(msg.decode("utf-8"))
+    while 1:
+        msg = conn_cmd1.recv(1024)
+        print("recieved command " + str(msg.decode("utf-8")))
 
 
 
@@ -35,30 +34,27 @@ cap=cv2.VideoCapture(0)
 
 #lock = Lock()
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s_vid1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s_cmd1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
-s.bind((HOST, 8000))
-s2.bind((HOST, 1235))
+s_vid1.bind((HOST, 8000))
+s_cmd1.bind((HOST, 1235))
 
 
-s.listen(1)
-s2.listen(1)
+s_vid1.listen(5)
+s_cmd1.listen(5)
 
 print("Ready to connect")
-connection, addr = s.accept()
 
-conn2, addr2 = s2.accept()
+conn_vid1, addr_vid1 = s_vid1.accept()
+conn_cmd1, addr_cmd1 = s_cmd1.accept()
 
-print (addr)
-print (addr2)
-
-#
-#send_video()
-#recv_cmd()
+print (addr_vid1,addr_cmd1)
 
 
+
+#start runninng with multithread
 proc1 = Thread(target=send_video)
 proc2 = Thread(target=recv_cmd)
 
