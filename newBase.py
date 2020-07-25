@@ -41,10 +41,13 @@ def video_stream():
             break;
 
 def send_cmd():
-    s_cmd1.send(bytes("hello", "utf-8"))
+    s_cmd1.send(bytes('1', "utf-8"))
+
 
 
 master = Tk()
+
+#connecting socket
 
 s_vid1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 s_cmd1 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -53,10 +56,12 @@ s_vid1.connect(('localhost',8000))
 s_cmd1.connect(('localhost',1235))
 
 
-b2 = Button(master, text="video", command=video_stream)
-b2.place(relx=0.67, rely=0.25, anchor=CENTER)
+#UI
 
-b2 = Button(master, text="hello", command=send_cmd)
+b1 = Button(master, text="video", command=video_stream)
+b1.place(relx=0.67, rely=0.25, anchor=CENTER)
+
+b2 = Button(master, text="cmd1", command=send_cmd)
 b2.place(relx=0.33, rely=0.25, anchor=CENTER)
 
 
