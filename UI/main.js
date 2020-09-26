@@ -136,23 +136,13 @@ async function processVidData(data, contents) {
   if (frameSize != FRAME_SIZE_NOT_READY && videoDataBuffer.length >= frameSize) {
     // Retrieve frame data.
     const frameData = videoDataBuffer.slice(0, frameSize);
-    // Decode frame data.
-    const frameDataBase64Decoded = Buffer.from(frameData.toString(), 'base64');
+
+    // Send data to frontend.
+    contents.send('rover', frameData.toString());
 
     // Remove frame data from accumulated data buffer.
     videoDataBuffer = videoDataBuffer.slice(frameSize);
     // Reset frame size.
     frameSize = FRAME_SIZE_NOT_READY;
-
-    // Process and send frame data to main window.
-    try {
-      const jimpSrc = await jimp.read(frameDataBase64Decoded);
-      const jimpSrcBuffer = await jimpSrc.getBufferAsync(jimp.MIME_JPEG);
-
-      console.log('Emitting signal!');
-      contents.send('rover', jimpSrcBuffer);
-    } catch(e) {
-      console.error(e);
-    }
   }
 }

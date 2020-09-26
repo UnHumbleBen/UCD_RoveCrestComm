@@ -101,7 +101,7 @@
         // console.log(data);
 
         // Load frame data buffer with Jimp
-        jimp.read(Buffer.from(data)).then(jimpSrc => {
+        jimp.read(Buffer.from(data, 'base64')).then(jimpSrc => {
           // Create cv.Mat from image using bitmap property
           const frame = cv.matFromImageData(jimpSrc.bitmap);
           // Show cv.Mat on the canvas.
