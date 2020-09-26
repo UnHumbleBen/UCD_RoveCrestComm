@@ -1,8 +1,18 @@
 import socket
 import argparse
+import struct
+import base64
+import cv2
+import datetime
+import numpy as np
+import pickle
+from tkinter import *
+from threading import Thread
+import concurrent.futures
+from multiprocessing import Process, Lock
 
 parser = argparse.ArgumentParser(description = "This is the client for the multi threaded socket server!")
-parser.add_argument('--host', metavar = 'host', type = str, nargs = '?', default = '')
+parser.add_argument('--host', metavar = 'host', type = str, nargs = '?', default = 'localhost')
 parser.add_argument('--port', metavar = 'port', type = int, nargs = '?', default = 9999)
 args = parser.parse_args()
 
@@ -19,7 +29,7 @@ except Exception as e:
     raise SystemExit(f"We have failed to connect to host: {args.host} on port: {args.port}, because: {e}")
 
 
-def msg_conn():
+def msg_conn(sck_msg):
     while True:
         msg = input("What do we want to send to the server?: ")
         sck_msg.sendall(msg.encode('utf-8'))
@@ -28,10 +38,10 @@ def msg_conn():
             break
         data = sck_msg.recv(1024)
         print(f"The server's response was: {data.decode()}")
-    client.close()
+    sck_msg.close()
     
 
-def video_conn():
+def video_conn(sck_vid):
     payload_size = struct.calcsize("<L")
     data = b''
     while(True):
@@ -48,6 +58,14 @@ def video_conn():
         npimg = np.frombuffer(img, dtype=np.uint8)
         frame = cv2.imdecode(npimg, 1)
 
+        # Debug frame by writing buffer to a file
+        # print("Frame size:", frame_size);
+        # frame_str = frame_data.decode('utf-8')
+
+        # with open("frame.txt", "w") as file1: 
+        #     # Writing data to a file 
+        #     file1.write(frame_str) 
+
         #frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
         end_time = datetime.datetime.now()
         fps = 1/(end_time-start_time).total_seconds()
@@ -61,10 +79,8 @@ def video_conn():
             break;
 
 
-
-threading._start_new_thread(msg_conn)
-threading._start_new_thread(video_conn)
-    
-
-
+proc1 = Thread(target=msg_conn, args=(sck_msg,))
+proc2 = Thread(target=video_conn, args=(sck_vid,))
+proc1.start()
+proc2.start()    
 

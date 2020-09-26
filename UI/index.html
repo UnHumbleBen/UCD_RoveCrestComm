@@ -10,7 +10,7 @@
     <title>RoveCrest GUI</title>
   </head>
   <body>
-    <script src = "app.js"></script>
+    <!-- <script src = "app.js"></script> -->
     <style>
       .navbar{
         background-color: orangered !important;
@@ -26,7 +26,8 @@
     <div class="row mr-2">
       <div class="col-8">
         <div class="embed-responsive embed-responsive-16by9">
-          <iframe src="https://www.youtube.com/watch?v=Dhrv-O9sivI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <!-- <iframe src="https://www.youtube.com/watch?v=Dhrv-O9sivI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> -->
+          <canvas id="roverCamera"></canvas>
         </div>
         <!-- <img src="./img/videobuffering.jpg" class="img-fluid" alt="live stream of the rover"> -->
       </div>
@@ -78,18 +79,41 @@
           <img src="./img/radar.png" class="img-fluid" alt="rader coordinate">
       </div>
       <div class="col-6 text-center">
-        
         <button type="button" class="btn btn-outline-primary m-3"> Move Left </button>
         <button type="button" class="btn btn-outline-primary m-3"> Move Right </button>
       </div>
     </div>
-    
-    
 
     <!-- You can also require other files to run in this process -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="./renderer.js"></script>
+    <!-- <script async src="opencv.js" onload="onOpenCvReady();" type="text/javascript"></script> -->
+
+    <script>
+      const {ipcRenderer} = require('electron');
+      const jimp = require('jimp');
+      window.$ = window.cv = require('./opencv.js');
+
+      ipcRenderer.on('rover', (event, data) => {
+        // DEBUG: Print frame data buffer
+        // console.log(data);
+
+        // Load frame data buffer with Jimp
+        jimp.read(Buffer.from(data)).then(jimpSrc => {
+          // Create cv.Mat from image using bitmap property
+          const frame = cv.matFromImageData(jimpSrc.bitmap);
+          // Show cv.Mat on the canvas.
+          cv.imshow('roverCamera', frame);
+
+          // Free memory allocated in Emscripten's heap
+          frame.delete();
+        })
+        .catch(err => {
+          console.error(err)
+        })
+      });
+    </script>
   </body>
 </html>
